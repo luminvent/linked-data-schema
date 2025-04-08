@@ -1,0 +1,10 @@
+[package]
+name = "linked-data-schema-tests"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+linked-data-schema = { path = ".." }
+shacl_rdf = "0.1"

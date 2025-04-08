@@ -1,0 +1,29 @@
+[workspace.package]
+license = "MIT"
+edition = "2024"
+version = "0.0.1"
+authors = [
+    "Marc-Antoine Arnaud <marc-antoine.arnaud@luminvent.com>"
+]
+description = "Generates SHACL from Rust structure"
+repository = "https://github.com/luminvent/linked-data-schema"
+
+[workspace]
+members = ["derive", "tests"]
+
+[package]
+name = "linked-data-schema"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+description.workspace = true
+repository.workspace = true
+
+[dependencies]
+iri_s = "0.1"
+linked-data-schema-derive = { path = "derive", version = "0.1" }
+prefixmap = "0.1"
+shacl_ast = "0.1"
+srdf = "0.1"
+uuid = { version = "1", features = ["v4"] }
