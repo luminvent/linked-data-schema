@@ -122,7 +122,6 @@ impl TokenGenerator for Schema {
 
           let node_shape = NodeShape::new(rdf_node_type_iri.clone())
             .with_targets(vec![Target::TargetClass(RDFNode::iri(IriS::from_str(#type_iri).unwrap()))])
-            .with_closed(true)
             .with_property_shapes(property_shapes);
 
           let _ = shapes.insert(RDFNode::BlankNode(#struct_blank_node.to_string()), Shape::NodeShape(Box::new(node_shape)));
