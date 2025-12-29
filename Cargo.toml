@@ -1,7 +1,7 @@
 [workspace.package]
 license = "MIT"
 edition = "2024"
-version = "0.1.1"
+version = "0.1.2"
 authors = [
     "Marc-Antoine Arnaud <marc-antoine.arnaud@luminvent.com>"
 ]
