@@ -2,6 +2,7 @@ mod uuid;
 
 use prefixmap::IriRef;
 use shacl_ast::component::Component;
+use std::collections::HashSet;
 
 pub trait LinkedDataSchemaFieldVisitor {
   fn field_components() -> Vec<Component> {
@@ -66,6 +67,20 @@ impl<S: LinkedDataSchemaFieldVisitor> LinkedDataSchemaFieldVisitor for Option<S>
 }
 
 impl<S: LinkedDataSchemaFieldVisitor> LinkedDataSchemaFieldVisitor for Vec<S> {
+  fn field_components() -> Vec<Component> {
+    if let Some(datatype) = S::type_iri_ref() {
+      [S::field_components(), vec![Component::Datatype(datatype)]].concat()
+    } else {
+      vec![]
+    }
+  }
+
+  fn type_iri_ref() -> Option<IriRef> {
+    None
+  }
+}
+
+impl<S: LinkedDataSchemaFieldVisitor> LinkedDataSchemaFieldVisitor for HashSet<S> {
   fn field_components() -> Vec<Component> {
     if let Some(datatype) = S::type_iri_ref() {
       [S::field_components(), vec![Component::Datatype(datatype)]].concat()
