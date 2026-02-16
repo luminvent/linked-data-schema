@@ -44,7 +44,7 @@ impl TokenGenerator for Schema {
         let iri = Literal::string(&iri);
 
         quote::quote! {
-          prefix_map.insert(#prefix, &iri!(#iri)).unwrap();
+          prefix_map.add_prefix(#prefix, iri!(#iri)).unwrap();
         }
       })
       .collect::<TokenStream>();
@@ -87,7 +87,7 @@ impl TokenGenerator for Schema {
         fn shacl() -> ::linked_data_schema::reexports::shacl_ast::Schema<::linked_data_schema::reexports::srdf::SRDFGraph> {
           use ::linked_data_schema::{
             reexports::{
-              iri_s::{iris::IriS, iri},
+              iri_s::{IriS, iri},
               prefixmap::{PrefixMap, IriRef},
               shacl_ast::{
                 ast::{

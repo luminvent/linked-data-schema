@@ -30,7 +30,7 @@ fn test_link_to_other_struct() {
   let schema = StructA::shacl();
 
   let expected_prefix_map =
-    PrefixMap::from_hashmap(&HashMap::from([("ex", "http://example.com/")])).unwrap();
+    PrefixMap::from_hashmap(HashMap::from([("ex", "http://example.com/")])).unwrap();
 
   assert_eq!(schema.prefix_map(), expected_prefix_map);
 
