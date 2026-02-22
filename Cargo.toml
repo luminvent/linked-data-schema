@@ -1,7 +1,7 @@
 [workspace.package]
 license = "MIT"
 edition = "2024"
-version = "0.1.3"
+version = "0.2.0"
 authors = [
     "Marc-Antoine Arnaud <marc-antoine.arnaud@luminvent.com>"
 ]
@@ -22,7 +22,7 @@ repository.workspace = true
 
 [dependencies]
 iri_s = "0.1"
-linked-data-schema-derive = { path = "derive", version = "0.1" }
+linked-data-schema-derive = { path = "derive", version = "0.2" }
 prefixmap = "=0.1.149"
 shacl_ast = "=0.2.2"
 shacl_rdf = "=0.2.2"
