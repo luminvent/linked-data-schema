@@ -35,6 +35,7 @@ macro_rules! field_visitor_impl {
 }
 
 field_visitor_impl!(String, "http://www.w3.org/2001/XMLSchema#string");
+field_visitor_impl!(bool, "http://www.w3.org/2001/XMLSchema#boolean");
 field_visitor_impl!(u8, "http://www.w3.org/2001/XMLSchema#unsignedByte");
 field_visitor_impl!(i8, "http://www.w3.org/2001/XMLSchema#byte");
 field_visitor_impl!(u16, "http://www.w3.org/2001/XMLSchema#unsignedShort");

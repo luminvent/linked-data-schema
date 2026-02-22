@@ -59,7 +59,7 @@ impl TokenGenerator for Schema {
           let identifier = Literal::string(&format!("{}Field", predicate.as_str()));
 
           quote::quote! {
-            RDFNode::iri(IriS::from_str(#identifier).unwrap()),
+            Object::Iri(IriS::from_str(#identifier).unwrap()),
           }
         } else {
           quote::quote! {}
@@ -83,8 +83,8 @@ impl TokenGenerator for Schema {
         }
       }
 
-      impl ::linked_data_schema::LinkedDataSchema for #ident {
-        fn shacl() -> ::linked_data_schema::reexports::shacl_ast::Schema<::linked_data_schema::reexports::srdf::SRDFGraph> {
+      impl::linked_data_schema::LinkedDataSchema for #ident {
+        fn shacl<RDF: ::linked_data_schema::reexports::rudof_rdf::rdf_core::Rdf>() -> ::linked_data_schema::reexports::shacl_ast::ast::schema::ShaclSchema<RDF> {
           use ::linked_data_schema::{
             reexports::{
               iri_s::{IriS, iri},
@@ -96,13 +96,10 @@ impl TokenGenerator for Schema {
                   node_shape::NodeShape,
                   property_shape::PropertyShape,
                   target::Target,
+                  schema::ShaclSchema,
                 },
-                Schema,
               },
-              srdf::{
-                RDFNode,
-                SHACLPath,
-              },
+              rudof_rdf::rdf_core::{SHACLPath, term::Object},
             },
             LinkedDataSchemaFieldVisitor,
           };
@@ -114,21 +111,21 @@ impl TokenGenerator for Schema {
 
           let mut shapes = HashMap::default();
 
-          let rdf_node_type_iri = RDFNode::iri(IriS::from_str(#type_iri_shape).unwrap());
+          let rdf_node_type_iri = Object::Iri(IriS::from_str(#type_iri_shape).unwrap());
 
           let property_shapes = vec![
             #property_shapes_iris
           ];
 
           let node_shape = NodeShape::new(rdf_node_type_iri.clone())
-            .with_targets(vec![Target::TargetClass(RDFNode::iri(IriS::from_str(#type_iri).unwrap()))])
+            .with_targets(vec![Target::Class(Object::Iri(IriS::from_str(#type_iri).unwrap()))])
             .with_property_shapes(property_shapes);
 
-          let _ = shapes.insert(RDFNode::BlankNode(#struct_blank_node.to_string()), Shape::NodeShape(Box::new(node_shape)));
+          let _ = shapes.insert(Object::BlankNode(#struct_blank_node.to_string()), Shape::NodeShape(Box::new(node_shape)));
 
           #(#fields)*
 
-          Schema::default()
+          ShaclSchema::new()
             .with_prefixmap(prefix_map)
             .with_shapes(shapes)
         }
@@ -156,21 +153,21 @@ impl TokenGenerator for Schema {
 
     tokens.extend(quote::quote! {
       impl ::linked_data_schema::LinkedDataSchema for #ident {
-        fn shacl() -> ::linked_data_schema::reexports::shacl_ast::Schema<::linked_data_schema::reexports::srdf::SRDFGraph> {
+        fn shacl<RDF: ::linked_data_schema::reexports::rudof_rdf::rdf_core::Rdf>() -> ::linked_data_schema::reexports::shacl_ast::ast::schema::ShaclSchema<RDF> {
           use ::linked_data_schema::reexports::{
             prefixmap::PrefixMap,
-            shacl_ast::{
-              ast::shape::Shape,
-              Schema,
+            shacl_ast::ast::{
+              shape::Shape,
+              schema::ShaclSchema,
             },
-            srdf::RDFNode,
+            rudof_rdf::rdf_core::term::Object,
           };
           use std::collections::HashMap;
 
           let prefix_map = PrefixMap::new();
           let shapes = HashMap::default();
 
-          Schema::default()
+          ShaclSchema::new()
             .with_prefixmap(prefix_map)
             .with_shapes(shapes)
         }
@@ -198,9 +195,9 @@ impl TokenGenerator for Schema {
       let field_type = &field.ty;
 
       tokens.extend(quote::quote! {
-        let node = RDFNode::BlankNode(::linked_data_schema::reexports::uuid::Uuid::new_v4().to_string());
+        let node = Object::BlankNode(::linked_data_schema::reexports::uuid::Uuid::new_v4().to_string());
 
-        let rdf_node_type_iri = RDFNode::iri(IriS::from_str(#identifier).unwrap());
+        let rdf_node_type_iri = Object::Iri(IriS::from_str(#identifier).unwrap());
 
         let property_shape = PropertyShape::new(
           rdf_node_type_iri,

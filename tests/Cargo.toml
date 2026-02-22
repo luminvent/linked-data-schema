@@ -7,4 +7,3 @@ publish = false
 
 [dependencies]
 linked-data-schema = { path = ".." }
-shacl_rdf = "0.1"

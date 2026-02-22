@@ -2,12 +2,8 @@
 fn test_link_to_other_struct() {
   use linked_data_schema::{
     LinkedDataSchema, print_linked_data_schema_for,
-    reexports::{
-      prefixmap::PrefixMap,
-      srdf::{RDFFormat, SRDFGraph},
-    },
+    reexports::{prefixmap::PrefixMap, rudof_rdf::rdf_impl::InMemoryGraph, shacl_ast::ShaclSchema},
   };
-  use shacl_rdf::ShaclWriter;
   use std::collections::HashMap;
   use std::io::Cursor;
 
@@ -27,7 +23,7 @@ fn test_link_to_other_struct() {
     field_b_0: String,
   }
 
-  let schema = StructA::shacl();
+  let schema: ShaclSchema<InMemoryGraph> = StructA::shacl();
 
   let expected_prefix_map =
     PrefixMap::from_hashmap(HashMap::from([("ex", "http://example.com/")])).unwrap();

@@ -3,12 +3,9 @@ fn test_basic_usage() {
   use linked_data_schema::{
     LinkedDataSchema, print_linked_data_schema_for,
     reexports::{
-      prefixmap::PrefixMap,
-      srdf::{RDFFormat, SRDFGraph},
-      uuid,
+      prefixmap::PrefixMap, rudof_rdf::rdf_impl::InMemoryGraph, shacl_ast::ShaclSchema, uuid,
     },
   };
-  use shacl_rdf::ShaclWriter;
   use std::collections::HashMap;
   use std::io::Cursor;
 
@@ -52,7 +49,7 @@ fn test_basic_usage() {
     sub_field_0: String,
   }
 
-  let schema = Struct::shacl();
+  let schema: ShaclSchema<InMemoryGraph> = Struct::shacl();
 
   let expected_prefix_map =
     PrefixMap::from_hashmap(HashMap::from([("ex", "http://example.com/")])).unwrap();
