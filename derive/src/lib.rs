@@ -171,6 +171,10 @@ impl TokenGenerator for Schema {
             .with_prefixmap(prefix_map)
             .with_shapes(shapes)
         }
+
+        fn components() -> Vec<::linked_data_schema::reexports::shacl_ast::ast::component::Component> {
+          vec![]
+        }
       }
     })
   }
