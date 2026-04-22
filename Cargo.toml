@@ -26,5 +26,5 @@ linked-data-schema-derive = { path = "derive", version = "0.3" }
 prefixmap = "=0.2.9"
 shacl_ast = "=0.2.9"
 shacl_rdf = "=0.2.9"
-rudof_rdf = "=0.2.9"
+rudof_rdf = "=0.2.12"
 uuid = { version = "1", features = ["v4"] }
