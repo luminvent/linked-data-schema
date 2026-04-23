@@ -1,11 +1,11 @@
 mod uuid;
 
 use prefixmap::IriRef;
-use shacl_ast::component::Component;
+use shacl::ast::ASTComponent;
 use std::collections::HashSet;
 
 pub trait LinkedDataSchemaFieldVisitor {
-  fn field_components() -> Vec<Component> {
+  fn field_components() -> Vec<ASTComponent> {
     vec![]
   }
 
@@ -15,13 +15,13 @@ pub trait LinkedDataSchemaFieldVisitor {
 macro_rules! field_visitor_impl {
   ($for_type:ty, $uri_datatype:literal) => {
     impl LinkedDataSchemaFieldVisitor for $for_type {
-      fn field_components() -> Vec<Component> {
+      fn field_components() -> Vec<ASTComponent> {
         use std::str::FromStr;
 
         vec![
-          Component::MinCount(1),
-          Component::MaxCount(1),
-          Component::Datatype(IriRef::from_str($uri_datatype).unwrap()),
+          ASTComponent::MinCount(1),
+          ASTComponent::MaxCount(1),
+          ASTComponent::Datatype(IriRef::from_str($uri_datatype).unwrap()),
         ]
       }
 
@@ -50,11 +50,11 @@ field_visitor_impl!(f32, "http://www.w3.org/2001/XMLSchema#float");
 field_visitor_impl!(f64, "http://www.w3.org/2001/XMLSchema#double");
 
 impl<S: LinkedDataSchemaFieldVisitor> LinkedDataSchemaFieldVisitor for Option<S> {
-  fn field_components() -> Vec<Component> {
+  fn field_components() -> Vec<ASTComponent> {
     if let Some(datatype) = S::type_iri_ref() {
       [
         S::field_components(),
-        vec![Component::MaxCount(1), Component::Datatype(datatype)],
+        vec![ASTComponent::MaxCount(1), ASTComponent::Datatype(datatype)],
       ]
       .concat()
     } else {
@@ -68,9 +68,13 @@ impl<S: LinkedDataSchemaFieldVisitor> LinkedDataSchemaFieldVisitor for Option<S>
 }
 
 impl<S: LinkedDataSchemaFieldVisitor> LinkedDataSchemaFieldVisitor for Vec<S> {
-  fn field_components() -> Vec<Component> {
+  fn field_components() -> Vec<ASTComponent> {
     if let Some(datatype) = S::type_iri_ref() {
-      [S::field_components(), vec![Component::Datatype(datatype)]].concat()
+      [
+        S::field_components(),
+        vec![ASTComponent::Datatype(datatype)],
+      ]
+      .concat()
     } else {
       vec![]
     }
@@ -82,9 +86,13 @@ impl<S: LinkedDataSchemaFieldVisitor> LinkedDataSchemaFieldVisitor for Vec<S> {
 }
 
 impl<S: LinkedDataSchemaFieldVisitor> LinkedDataSchemaFieldVisitor for HashSet<S> {
-  fn field_components() -> Vec<Component> {
+  fn field_components() -> Vec<ASTComponent> {
     if let Some(datatype) = S::type_iri_ref() {
-      [S::field_components(), vec![Component::Datatype(datatype)]].concat()
+      [
+        S::field_components(),
+        vec![ASTComponent::Datatype(datatype)],
+      ]
+      .concat()
     } else {
       vec![]
     }

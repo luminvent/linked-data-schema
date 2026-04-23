@@ -2,10 +2,8 @@
 fn test_link_to_other_struct() {
   use linked_data_schema::{
     LinkedDataSchema, print_linked_data_schema_for,
-    reexports::{prefixmap::PrefixMap, rudof_rdf::rdf_impl::InMemoryGraph, shacl_ast::ShaclSchema},
+    reexports::{iri_s::iri, prefixmap::PrefixMap, shacl::ast::ASTSchema},
   };
-  use std::collections::HashMap;
-  use std::io::Cursor;
 
   #[derive(LinkedDataSchema, Debug, PartialEq)]
   #[ld(prefix("ex" = "http://example.com/"))]
@@ -23,12 +21,17 @@ fn test_link_to_other_struct() {
     field_b_0: String,
   }
 
-  let schema: ShaclSchema<InMemoryGraph> = StructA::shacl();
+  let schema: ASTSchema = StructA::shacl();
 
-  let expected_prefix_map =
-    PrefixMap::from_hashmap(HashMap::from([("ex", "http://example.com/")])).unwrap();
+  let expected_prefix_map = {
+    let mut prefix_map = PrefixMap::new();
+    prefix_map
+      .add_prefix("ex", iri!("http://example.com/"))
+      .unwrap();
+    prefix_map
+  };
 
-  assert_eq!(schema.prefix_map(), expected_prefix_map);
+  assert_eq!(schema.prefixmap(), &expected_prefix_map);
 
   print_linked_data_schema_for!(StructA);
   print_linked_data_schema_for!(StructB);

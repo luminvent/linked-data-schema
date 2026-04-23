@@ -21,10 +21,9 @@ description.workspace = true
 repository.workspace = true
 
 [dependencies]
-iri_s = "0.2"
+iri_s = { version = "0.2.14", package = "li_iri_s" }
 linked-data-schema-derive = { path = "derive", version = "0.3" }
-prefixmap = "=0.2.9"
-shacl_ast = "=0.2.9"
-shacl_rdf = "=0.2.9"
-rudof_rdf = "=0.2.12"
+prefixmap = { version = "0.2.14", package = "li_prefixmap" }
+shacl = { version = "0.2.14", package = "li_shacl" }
+rudof_rdf = { version = "0.2.14", package = "li_rudof_rdf" }
 uuid = { version = "1", features = ["v4"] }

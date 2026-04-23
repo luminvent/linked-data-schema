@@ -71,7 +71,7 @@ impl TokenGenerator for Schema {
 
     tokens.extend(quote::quote! {
       impl ::linked_data_schema::LinkedDataSchemaFieldVisitor for #ident {
-        fn field_components() -> Vec<::linked_data_schema::reexports::shacl_ast::ast::component::Component> {
+        fn field_components() -> Vec<::linked_data_schema::reexports::shacl::ast::ASTComponent> {
           Self::components()
         }
 
@@ -84,20 +84,20 @@ impl TokenGenerator for Schema {
       }
 
       impl::linked_data_schema::LinkedDataSchema for #ident {
-        fn shacl<RDF: ::linked_data_schema::reexports::rudof_rdf::rdf_core::Rdf>() -> ::linked_data_schema::reexports::shacl_ast::ast::schema::ShaclSchema<RDF> {
+        fn shacl() -> ::linked_data_schema::reexports::shacl::ast::ASTSchema {
           use ::linked_data_schema::{
             reexports::{
               iri_s::{IriS, iri},
               prefixmap::{PrefixMap, IriRef},
-              shacl_ast::{
+              shacl::{
                 ast::{
-                  component::Component,
-                  shape::Shape,
-                  node_shape::NodeShape,
-                  property_shape::PropertyShape,
-                  target::Target,
-                  schema::ShaclSchema,
+                  ASTComponent,
+                  ASTShape,
+                  ASTNodeShape,
+                  ASTPropertyShape,
+                  ASTSchema,
                 },
+                types::Target,
               },
               rudof_rdf::rdf_core::{SHACLPath, term::Object},
             },
@@ -117,30 +117,30 @@ impl TokenGenerator for Schema {
             #property_shapes_iris
           ];
 
-          let node_shape = NodeShape::new(rdf_node_type_iri.clone())
+          let node_shape = ASTNodeShape::new(rdf_node_type_iri.clone())
             .with_targets(vec![Target::Class(Object::Iri(IriS::from_str(#type_iri).unwrap()))])
             .with_property_shapes(property_shapes);
 
-          let _ = shapes.insert(Object::BlankNode(#struct_blank_node.to_string()), Shape::NodeShape(Box::new(node_shape)));
-
           #(#fields)*
 
-          ShaclSchema::new()
+          let _ = shapes.insert(Object::BlankNode(#struct_blank_node.to_string()), ASTShape::NodeShape(Box::new(node_shape)));
+
+          ASTSchema::new()
             .with_prefixmap(prefix_map)
             .with_shapes(shapes)
         }
 
-        fn components() -> Vec<::linked_data_schema::reexports::shacl_ast::ast::component::Component> {
+        fn components() -> Vec<::linked_data_schema::reexports::shacl::ast::ASTComponent> {
           use ::linked_data_schema::{
             reexports::{
               iri_s::iri,
               prefixmap::IriRef,
-              shacl_ast::ast::component::Component,
+              shacl::ast::ASTComponent,
             }
           };
 
           vec![
-            Component::Datatype(IriRef::iri(iri!(#type_iri_shape))),
+            ASTComponent::Datatype(IriRef::iri(iri!(#type_iri_shape))),
           ]
         }
       }
@@ -153,12 +153,12 @@ impl TokenGenerator for Schema {
 
     tokens.extend(quote::quote! {
       impl ::linked_data_schema::LinkedDataSchema for #ident {
-        fn shacl<RDF: ::linked_data_schema::reexports::rudof_rdf::rdf_core::Rdf>() -> ::linked_data_schema::reexports::shacl_ast::ast::schema::ShaclSchema<RDF> {
+        fn shacl() -> ::linked_data_schema::reexports::shacl::ast::ASTSchema {
           use ::linked_data_schema::reexports::{
             prefixmap::PrefixMap,
-            shacl_ast::ast::{
-              shape::Shape,
-              schema::ShaclSchema,
+            shacl::ast::{
+              ASTShape,
+              ASTSchema,
             },
             rudof_rdf::rdf_core::term::Object,
           };
@@ -167,12 +167,12 @@ impl TokenGenerator for Schema {
           let prefix_map = PrefixMap::new();
           let shapes = HashMap::default();
 
-          ShaclSchema::new()
+          ASTSchema::new()
             .with_prefixmap(prefix_map)
             .with_shapes(shapes)
         }
 
-        fn components() -> Vec<::linked_data_schema::reexports::shacl_ast::ast::component::Component> {
+        fn components() -> Vec<::linked_data_schema::reexports::shacl::ast::ASTComponent> {
           vec![]
         }
       }
@@ -199,16 +199,14 @@ impl TokenGenerator for Schema {
       let field_type = &field.ty;
 
       tokens.extend(quote::quote! {
-        let node = Object::BlankNode(::linked_data_schema::reexports::uuid::Uuid::new_v4().to_string());
-
         let rdf_node_type_iri = Object::Iri(IriS::from_str(#identifier).unwrap());
 
-        let property_shape = PropertyShape::new(
-          rdf_node_type_iri,
+        let property_shape = ASTPropertyShape::new(
+          rdf_node_type_iri.clone(),
           SHACLPath::iri(IriS::from_str(#predicate).unwrap()),
         ).with_components(<#field_type>::field_components());
 
-        let _ = shapes.insert(node, Shape::PropertyShape(Box::new(property_shape)));
+        let _ = shapes.insert(rdf_node_type_iri, ASTShape::PropertyShape(Box::new(property_shape)));
       })
     }
   }

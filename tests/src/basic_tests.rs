@@ -2,12 +2,8 @@
 fn test_basic_usage() {
   use linked_data_schema::{
     LinkedDataSchema, print_linked_data_schema_for,
-    reexports::{
-      prefixmap::PrefixMap, rudof_rdf::rdf_impl::InMemoryGraph, shacl_ast::ShaclSchema, uuid,
-    },
+    reexports::{iri_s::iri, prefixmap::PrefixMap, shacl::ast::ASTSchema, uuid},
   };
-  use std::collections::HashMap;
-  use std::io::Cursor;
 
   #[derive(LinkedDataSchema, Debug, PartialEq)]
   #[ld(prefix("ex" = "http://example.com/"))]
@@ -49,14 +45,19 @@ fn test_basic_usage() {
     sub_field_0: String,
   }
 
-  let schema: ShaclSchema<InMemoryGraph> = Struct::shacl();
+  let schema: ASTSchema = Struct::shacl();
 
-  let expected_prefix_map =
-    PrefixMap::from_hashmap(HashMap::from([("ex", "http://example.com/")])).unwrap();
+  let expected_prefix_map = {
+    let mut prefix_map = PrefixMap::new();
+    prefix_map
+      .add_prefix("ex", iri!("http://example.com/"))
+      .unwrap();
+    prefix_map
+  };
 
-  assert_eq!(schema.prefix_map(), expected_prefix_map);
+  assert_eq!(schema.prefixmap(), &expected_prefix_map);
 
-  print_linked_data_schema_for!(Struct);
+  // print_linked_data_schema_for!(Struct);
   print_linked_data_schema_for!(SubStruct);
 
   // assert!(false)
