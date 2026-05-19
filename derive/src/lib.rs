@@ -30,7 +30,7 @@ impl TokenGenerator for Schema {
   }
 
   fn generate_struct_tokens(rdf_struct: &RdfStruct<Self>, tokens: &mut TokenStream) {
-    let type_iri = rdf_struct.type_iri().unwrap();
+    let type_iri = rdf_struct.type_iri().expect("missing type iri");
 
     let type_iri_shape = Literal::string(&format!("{}Shape", type_iri.as_str()));
     let type_iri = Literal::string(type_iri.as_str());
@@ -152,6 +152,16 @@ impl TokenGenerator for Schema {
     let ident = &r#enum.ident;
 
     tokens.extend(quote::quote! {
+      impl ::linked_data_schema::LinkedDataSchemaFieldVisitor for #ident {
+        fn field_components() -> Vec<::linked_data_schema::reexports::shacl::ast::ASTComponent> {
+          Self::components()
+        }
+
+        fn type_iri_ref() -> Option<::linked_data_schema::reexports::prefixmap::IriRef> {
+          None
+        }
+      }
+
       impl ::linked_data_schema::LinkedDataSchema for #ident {
         fn shacl() -> ::linked_data_schema::reexports::shacl::ast::ASTSchema {
           use ::linked_data_schema::reexports::{
