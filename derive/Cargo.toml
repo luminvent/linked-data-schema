@@ -11,9 +11,9 @@ repository.workspace = true
 proc-macro = true
 
 [dependencies]
-linked-data-core = "0.1"
-proc-macro-error = "1"
-proc-macro2 = "1.0"
-quote = "1.0"
-syn = { version = "2.0", features = ["full", "extra-traits"] }
+linked-data-core = "0.2.1"
+proc-macro-error = "1.0.4"
+proc-macro2 = "1.0.107"
+quote = "1.0.47"
+syn = { version = "3.0.6", features = ["full", "extra-traits"] }
 uuid = { version = "1.17.0", features = ["v4"] }
