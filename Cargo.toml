@@ -26,4 +26,9 @@ linked-data-schema-derive = { path = "derive", version = "0.4" }
 prefixmap = { version = "0.2.14", package = "li_prefixmap" }
 shacl = { version = "0.2.14", package = "li_shacl" }
 rudof_rdf = { version = "0.2.14", package = "li_rudof_rdf" }
+serde_json = { version = "1", optional = true }
+utoipa = { version = "5", optional = true }
 uuid = { version = "1", features = ["v4"] }
+
+[features]
+utoipa = ["dep:utoipa", "dep:serde_json"]

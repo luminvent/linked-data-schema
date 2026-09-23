@@ -5,11 +5,27 @@ use quote::ToTokens;
 use syn::DeriveInput;
 use uuid::Uuid;
 
+mod to_schema;
+
 #[proc_macro_error]
 #[proc_macro_derive(LinkedDataSchema, attributes(ld))]
 pub fn derive_serialize(item: proc_macro::TokenStream) -> proc_macro::TokenStream {
   let raw_input = syn::parse_macro_input!(item as DeriveInput);
   let linked_data_type: RdfType<Schema> = RdfType::from_derive(raw_input);
+
+  let mut output = TokenStream::new();
+  linked_data_type.to_tokens(&mut output);
+  output.into()
+}
+
+/// Implements `utoipa::ToSchema`, describing the type as a compacted JSON-LD document.
+///
+/// Requires the `utoipa` feature of `linked-data-schema`.
+#[proc_macro_error]
+#[proc_macro_derive(LinkedDataToSchema, attributes(ld))]
+pub fn derive_to_schema(item: proc_macro::TokenStream) -> proc_macro::TokenStream {
+  let raw_input = syn::parse_macro_input!(item as DeriveInput);
+  let linked_data_type: RdfType<to_schema::ToSchema> = RdfType::from_derive(raw_input);
 
   let mut output = TokenStream::new();
   linked_data_type.to_tokens(&mut output);

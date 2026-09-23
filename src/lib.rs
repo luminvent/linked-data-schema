@@ -1,14 +1,24 @@
 mod linked_data_schema_field_visitor;
+#[cfg(feature = "utoipa")]
+mod linked_data_to_schema_field;
 
 pub use linked_data_schema_derive::LinkedDataSchema;
+#[cfg(feature = "utoipa")]
+pub use linked_data_schema_derive::LinkedDataToSchema;
 pub use linked_data_schema_field_visitor::LinkedDataSchemaFieldVisitor;
+#[cfg(feature = "utoipa")]
+pub use linked_data_to_schema_field::LinkedDataToSchemaField;
 use shacl::ast::{ASTComponent, ASTSchema};
 
 pub mod reexports {
   pub use iri_s;
   pub use prefixmap;
   pub use rudof_rdf;
+  #[cfg(feature = "utoipa")]
+  pub use serde_json;
   pub use shacl;
+  #[cfg(feature = "utoipa")]
+  pub use utoipa;
   pub use uuid;
 }
 
