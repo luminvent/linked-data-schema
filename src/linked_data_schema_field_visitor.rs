@@ -1,34 +1,36 @@
 mod uuid;
 
 use prefixmap::IriRef;
-use shacl::ast::ASTComponent;
-use std::collections::HashSet;
+use rudof_rdf::rdf_core::term::Object;
+use shacl::ast::{ASTComponent, ASTShape};
+use std::collections::{HashMap, HashSet};
 
 pub trait LinkedDataSchemaFieldVisitor {
+  /// Constraints on each value of a field of this type, e.g. its datatype.
+  fn value_components() -> Vec<ASTComponent>;
+
+  /// Constraints on a field of this type: by default, exactly one value.
   fn field_components() -> Vec<ASTComponent> {
-    vec![]
+    [
+      vec![ASTComponent::MinCount(1), ASTComponent::MaxCount(1)],
+      Self::value_components(),
+    ]
+    .concat()
   }
 
-  fn type_iri_ref() -> Option<IriRef>;
+  /// Adds the shapes referenced by the constraints, e.g. the node shape of a nested struct.
+  fn add_shapes(_shapes: &mut HashMap<Object, ASTShape>) {}
 }
 
 macro_rules! field_visitor_impl {
   ($for_type:ty, $uri_datatype:literal) => {
     impl LinkedDataSchemaFieldVisitor for $for_type {
-      fn field_components() -> Vec<ASTComponent> {
+      fn value_components() -> Vec<ASTComponent> {
         use std::str::FromStr;
 
-        vec![
-          ASTComponent::MinCount(1),
-          ASTComponent::MaxCount(1),
-          ASTComponent::Datatype(IriRef::from_str($uri_datatype).unwrap()),
-        ]
-      }
-
-      fn type_iri_ref() -> Option<IriRef> {
-        use std::str::FromStr;
-
-        IriRef::from_str($uri_datatype).ok()
+        vec![ASTComponent::Datatype(
+          IriRef::from_str($uri_datatype).unwrap(),
+        )]
       }
     }
   };
@@ -49,56 +51,50 @@ field_visitor_impl!(isize, "http://www.w3.org/2001/XMLSchema#integer");
 field_visitor_impl!(f32, "http://www.w3.org/2001/XMLSchema#float");
 field_visitor_impl!(f64, "http://www.w3.org/2001/XMLSchema#double");
 
+/// An optional field keeps the constraints of its inner type, except the minimum count.
 impl<S: LinkedDataSchemaFieldVisitor> LinkedDataSchemaFieldVisitor for Option<S> {
-  fn field_components() -> Vec<ASTComponent> {
-    if let Some(datatype) = S::type_iri_ref() {
-      [
-        S::field_components(),
-        vec![ASTComponent::MaxCount(1), ASTComponent::Datatype(datatype)],
-      ]
-      .concat()
-    } else {
-      vec![]
-    }
+  fn value_components() -> Vec<ASTComponent> {
+    S::value_components()
   }
 
-  fn type_iri_ref() -> Option<IriRef> {
-    None
+  fn field_components() -> Vec<ASTComponent> {
+    S::field_components()
+      .into_iter()
+      .filter(|component| !matches!(component, ASTComponent::MinCount(_)))
+      .collect()
+  }
+
+  fn add_shapes(shapes: &mut HashMap<Object, ASTShape>) {
+    S::add_shapes(shapes)
   }
 }
 
+/// A multivalued field only constrains its values, not their count.
 impl<S: LinkedDataSchemaFieldVisitor> LinkedDataSchemaFieldVisitor for Vec<S> {
-  fn field_components() -> Vec<ASTComponent> {
-    if let Some(datatype) = S::type_iri_ref() {
-      [
-        S::field_components(),
-        vec![ASTComponent::Datatype(datatype)],
-      ]
-      .concat()
-    } else {
-      vec![]
-    }
+  fn value_components() -> Vec<ASTComponent> {
+    S::value_components()
   }
 
-  fn type_iri_ref() -> Option<IriRef> {
-    None
+  fn field_components() -> Vec<ASTComponent> {
+    S::value_components()
+  }
+
+  fn add_shapes(shapes: &mut HashMap<Object, ASTShape>) {
+    S::add_shapes(shapes)
   }
 }
 
+/// A multivalued field only constrains its values, not their count.
 impl<S: LinkedDataSchemaFieldVisitor> LinkedDataSchemaFieldVisitor for HashSet<S> {
-  fn field_components() -> Vec<ASTComponent> {
-    if let Some(datatype) = S::type_iri_ref() {
-      [
-        S::field_components(),
-        vec![ASTComponent::Datatype(datatype)],
-      ]
-      .concat()
-    } else {
-      vec![]
-    }
+  fn value_components() -> Vec<ASTComponent> {
+    S::value_components()
   }
 
-  fn type_iri_ref() -> Option<IriRef> {
-    None
+  fn field_components() -> Vec<ASTComponent> {
+    S::value_components()
+  }
+
+  fn add_shapes(shapes: &mut HashMap<Object, ASTShape>) {
+    S::add_shapes(shapes)
   }
 }

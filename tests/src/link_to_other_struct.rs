@@ -1,26 +1,52 @@
+use linked_data_schema::{
+  LinkedDataSchema,
+  reexports::{
+    iri_s::{IriS, iri},
+    prefixmap::{IriRef, PrefixMap},
+    rudof_rdf::rdf_core::term::Object,
+    shacl::{
+      ast::{ASTComponent, ASTSchema, ASTShape},
+      ir::IRSchema,
+    },
+  },
+};
+use std::str::FromStr;
+
+#[derive(LinkedDataSchema, Debug, PartialEq)]
+#[ld(prefix("ex" = "http://example.com/"))]
+#[ld(type = "ex:StructA")]
+struct StructA {
+  #[ld("ex:name")]
+  name: String,
+
+  #[ld("ex:field_a_0")]
+  field_a_0: StructB,
+}
+
+#[derive(LinkedDataSchema, Debug, PartialEq)]
+#[ld(prefix("ex" = "http://example.com/"))]
+#[ld(type = "ex:StructB")]
+struct StructB {
+  #[ld("ex:name")]
+  name: Option<String>,
+
+  #[ld("ex:field_b_0")]
+  field_b_0: Vec<StructA>,
+}
+
+fn object(iri: &str) -> Object {
+  Object::Iri(IriS::from_str(iri).unwrap())
+}
+
+fn property_components(schema: &ASTSchema, property_shape: &str) -> Vec<ASTComponent> {
+  match schema.get_shape(&object(property_shape)) {
+    Some(ASTShape::PropertyShape(shape)) => shape.components().clone(),
+    shape => panic!("expected a property shape for {property_shape}, got {shape:?}"),
+  }
+}
+
 #[test]
 fn test_link_to_other_struct() {
-  use linked_data_schema::{
-    LinkedDataSchema, print_linked_data_schema_for,
-    reexports::{iri_s::iri, prefixmap::PrefixMap, shacl::ast::ASTSchema},
-  };
-
-  #[derive(LinkedDataSchema, Debug, PartialEq)]
-  #[ld(prefix("ex" = "http://example.com/"))]
-  #[ld(type = "ex:StructA")]
-  struct StructA {
-    #[ld("ex:field_a_0")]
-    field_a_0: StructB,
-  }
-
-  #[derive(LinkedDataSchema, Debug, PartialEq)]
-  #[ld(prefix("ex" = "http://example.com/"))]
-  #[ld(type = "ex:StructB")]
-  struct StructB {
-    #[ld("ex:field_b_0")]
-    field_b_0: String,
-  }
-
   let schema: ASTSchema = StructA::shacl();
 
   let expected_prefix_map = {
@@ -33,10 +59,24 @@ fn test_link_to_other_struct() {
 
   assert_eq!(schema.prefixmap(), &expected_prefix_map);
 
-  print_linked_data_schema_for!(StructA);
-  print_linked_data_schema_for!(StructB);
+  // Both node shapes and their 2 property shapes each, although the types reference each other.
+  assert_eq!(schema.iter().count(), 6);
+  IRSchema::try_from(schema).unwrap();
+}
 
-  // let expected_shapes = HashMap::from([]);
+#[test]
+fn test_shared_predicate_keeps_constraints_per_struct() {
+  use ASTComponent::{Datatype, MaxCount, MinCount};
 
-  // assert_eq!(schema.iter().map(|(node, shape)| (node.clone(), shape.clone())).collect::<HashMap<RDFNode, Shape>>(), expected_shapes);
+  let schema = StructA::shacl();
+  let string = || Datatype(IriRef::from_str("http://www.w3.org/2001/XMLSchema#string").unwrap());
+
+  assert_eq!(
+    property_components(&schema, "http://example.com/StructAShape/ex:name"),
+    [MinCount(1), MaxCount(1), string()]
+  );
+  assert_eq!(
+    property_components(&schema, "http://example.com/StructBShape/ex:name"),
+    [MaxCount(1), string()]
+  );
 }

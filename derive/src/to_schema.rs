@@ -5,35 +5,14 @@
 use linked_data_core::{
   PredicatePath, RdfEnum, RdfField, RdfStruct, RdfType, RdfVariant, TokenGenerator,
 };
-use proc_macro_error::abort;
+use proc_macro_error3::abort;
 use proc_macro2::{Literal, TokenStream};
 use syn::spanned::Spanned;
 
+use crate::prefixes::{compact, sorted_prefixes};
+
 #[derive(Debug)]
 pub(crate) struct ToSchema;
-
-/// Prefixes of the type sorted by name, so the generated code does not depend on hash map order.
-fn sorted_prefixes<I: IntoIterator<Item = (String, String)>>(prefixes: I) -> Vec<(String, String)> {
-  let mut prefixes: Vec<_> = prefixes.into_iter().collect();
-  prefixes.sort();
-  prefixes
-}
-
-/// Compacts an IRI with the longest matching namespace, e.g. `http://example.com/name` into
-/// `ex:name`. The IRI is kept as is when no namespace matches.
-fn compact(iri: &str, prefixes: &[(String, String)]) -> String {
-  prefixes
-    .iter()
-    .filter_map(|(prefix, namespace)| {
-      iri
-        .strip_prefix(namespace.as_str())
-        .filter(|local_name| !local_name.is_empty())
-        .map(|local_name| (namespace.len(), format!("{prefix}:{local_name}")))
-    })
-    .max_by_key(|(namespace_length, _)| *namespace_length)
-    .map(|(_, compacted)| compacted)
-    .unwrap_or_else(|| iri.to_string())
-}
 
 fn json_ld_context(prefixes: &[(String, String)]) -> TokenStream {
   let insert_all_prefixes = prefixes
@@ -156,13 +135,7 @@ impl TokenGenerator for ToSchema {
       )
     };
 
-    let prefixes = sorted_prefixes(
-      rdf_struct
-        .prefix_mappings()
-        .clone()
-        .into_iter()
-        .map(|(prefix, namespace)| (prefix.to_string(), namespace.into_inner())),
-    );
+    let prefixes = sorted_prefixes(rdf_struct.prefix_mappings().clone());
 
     let compacted_type = Literal::string(&compact(type_iri.as_str(), &prefixes));
     let type_iri = Literal::string(type_iri.as_str());
@@ -248,13 +221,7 @@ impl TokenGenerator for ToSchema {
   fn generate_enum_tokens(rdf_enum: &RdfEnum<Self>, tokens: &mut TokenStream) {
     let ident = &rdf_enum.ident;
 
-    let prefixes = sorted_prefixes(
-      rdf_enum
-        .prefix_mappings()
-        .clone()
-        .into_iter()
-        .map(|(prefix, namespace)| (prefix.to_string(), namespace.into_inner())),
-    );
+    let prefixes = sorted_prefixes(rdf_enum.prefix_mappings().clone());
 
     let schema = if rdf_enum.is_closed_list() {
       // Each unit variant is a resource, serialized as a node reference: `{"@id": "ex:Variant"}`.

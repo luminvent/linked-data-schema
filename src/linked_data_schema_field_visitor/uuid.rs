@@ -4,21 +4,15 @@ use prefixmap::IriRef;
 use shacl::ast::ASTComponent;
 
 impl LinkedDataSchemaFieldVisitor for ::uuid::Uuid {
-  fn field_components() -> Vec<ASTComponent> {
+  fn value_components() -> Vec<ASTComponent> {
     vec![
-      ASTComponent::MinCount(1),
-      ASTComponent::MaxCount(1),
-      ASTComponent::Datatype(Self::type_iri_ref().unwrap()),
+      ASTComponent::Datatype(IriRef::iri(iri!("http://www.w3.org/2001/XMLSchema#string"))),
       ASTComponent::Pattern {
         pattern:
-          "/^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i"
+          "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$"
             .to_string(),
-        flags: None,
+        flags: Some("i".to_string()),
       },
     ]
-  }
-
-  fn type_iri_ref() -> Option<IriRef> {
-    Some(IriRef::iri(iri!("xsd::string")))
   }
 }
