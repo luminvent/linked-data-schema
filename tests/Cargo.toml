@@ -6,6 +6,6 @@ license.workspace = true
 publish = false
 
 [dependencies]
-linked-data-schema = { path = "..", features = ["utoipa"] }
+linked-data-schema = { path = "..", features = ["oxrdf", "utoipa"] }
 serde_json = "1"
 utoipa = "5"

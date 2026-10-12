@@ -1,4 +1,4 @@
-use linked_data_schema::{LinkedDataToSchema, reexports::uuid};
+use linked_data_schema::{LinkedDataSchema, LinkedDataToSchema, reexports::uuid};
 use serde_json::json;
 use utoipa::{
   OpenApi, PartialSchema, ToSchema,
@@ -176,4 +176,30 @@ fn test_openapi_components() {
   names.sort();
 
   assert_eq!(names, ["Color", "Struct", "SubStruct", "Value"]);
+}
+
+#[allow(dead_code)]
+#[derive(LinkedDataSchema, LinkedDataToSchema)]
+#[ld(prefix("ex" = "http://example.com/"))]
+#[ld(type = "ex:NamedNodeId")]
+struct NamedNodeId {
+  #[ld(id)]
+  id: linked_data_schema::reexports::oxrdf::NamedNode,
+
+  #[ld("ex:field")]
+  field: String,
+}
+
+#[test]
+fn test_named_node_id() {
+  let schema = to_json(NamedNodeId::schema());
+
+  assert_eq!(
+    schema["properties"]["@id"],
+    json!({ "type": "string", "format": "iri" })
+  );
+  assert_eq!(schema["required"], json!(["@type", "@id", "ex:field"]));
+
+  // The identifier is not a property of the SHACL node shape.
+  let _ = NamedNodeId::shacl();
 }

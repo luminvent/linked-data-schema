@@ -11,6 +11,8 @@ pub use linked_data_to_schema_field::LinkedDataToSchemaField;
 use shacl::ast::{ASTComponent, ASTSchema};
 
 pub mod reexports {
+  #[cfg(feature = "oxrdf")]
+  pub use oxrdf;
   pub use iri_s;
   pub use prefixmap;
   pub use rudof_rdf;

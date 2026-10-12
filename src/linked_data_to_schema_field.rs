@@ -3,7 +3,7 @@ use utoipa::{
   PartialSchema,
   openapi::{
     RefOr,
-    schema::{ArrayBuilder, ObjectBuilder, Schema, Type},
+    schema::{ArrayBuilder, ObjectBuilder, Schema, SchemaFormat, Type},
   },
 };
 
@@ -45,6 +45,16 @@ impl LinkedDataToSchemaField for ::uuid::Uuid {
       .pattern(Some(
         "^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-5][0-9a-fA-F]{3}-[089abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$",
       ))
+      .into()
+  }
+}
+
+#[cfg(feature = "oxrdf")]
+impl LinkedDataToSchemaField for ::oxrdf::NamedNode {
+  fn value_schema() -> RefOr<Schema> {
+    ObjectBuilder::new()
+      .schema_type(Type::String)
+      .format(Some(SchemaFormat::Custom("iri".to_string())))
       .into()
   }
 }

@@ -23,6 +23,7 @@ repository.workspace = true
 [dependencies]
 iri_s = { version = "0.2.14", package = "li_iri_s" }
 linked-data-schema-derive = { path = "derive", version = "0.5" }
+oxrdf = { version = "0.3", optional = true }
 prefixmap = { version = "0.2.14", package = "li_prefixmap" }
 shacl = { version = "0.2.14", package = "li_shacl" }
 rudof_rdf = { version = "0.2.14", package = "li_rudof_rdf" }
@@ -31,4 +32,5 @@ utoipa = { version = "5", optional = true }
 uuid = { version = "1", features = ["v4"] }
 
 [features]
+oxrdf = ["dep:oxrdf"]
 utoipa = ["dep:utoipa", "dep:serde_json"]
